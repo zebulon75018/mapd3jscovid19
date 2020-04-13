@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="/static/style.css">
+
+
+<body>
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:400,500,700" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+<script src="/static/d3.v3.min.js"></script>
+<script src="/static/topojson.v1.min.js"></script>
+
+
+
+<div class="flex-parent">
+    <div class="input-flex-container">
+        {% for d in data.getDate() %}      
+        <div class="input">
+            <a href="/{{loop.index}}"><span  data-info="{{d}}"></span></a>
+          </div>        
+       {% endfor %}          
+    </div>
+</div>    
+
+<script>
+
+
+var places = [
+            {% for d in data.getNbRow() %}            
+              {
+                name: "{{data.getName(d)}}",				        
+                location: {
+                  latitude: {{data.getLat(d)}},
+                  longitude: {{data.getLong(d)}}
+                },
+                nbdeath : {{data.getData(d,iddate)}},
+              },
+            {% endfor %}           
+            ] 
+
+var width = 960,
+    height = 500;
+
+//Define map projection
+            var projection = d3.geo.mercator()
+				.center([0, 5 ])
+    				.scale(150);
+
+            //Define path generator
+            //var path = d3.geo.path()
+             //                .projection(projection);
+
+var path = d3.geo.path().projection(projection);
+//var path = d3.geo.path();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+var url = "/static/countries.json";
+d3.json(url, function(error, topology) {
+  if (error) throw error;
+  
+  var geojson = topojson.feature(topology, topology.objects.units);
+
+
+  
+
+
+  svg.selectAll("path")
+      .data(geojson.features)
+      .enter().append("path")
+      .attr("d", path);
+
+svg.selectAll(".pin")
+						  .data(places)
+						  .enter().append("circle", ".pin")
+						  .attr("r", function(d) { 
+                if ( d.nbdeath == 0) return 0;  
+                if ( d.nbdeath < 1000 ) return 5;
+                else
+                {
+                  return 20;
+                }
+                //return d.nbdeath/1000; 
+              })
+						  .attr("transform", function(d) {
+							return "translate(" + projection([
+							  d.location.longitude,
+							  d.location.latitude
+							]) + ")";
+						  })
+              .on('mouseover', mouseover)
+              .on('mouseout', mouseout)
+						  //.on('click', tip.hide);
+});
+
+var lastpinover = null;
+
+
+function mouseover(d){
+  console.log(d);
+  lastpinover = this;
+  // Highlight hovered province
+     d3.select(this).style('fill', 'orange');
+
+  // Draw effects
+  //textArt(nameFn(d));
+}
+
+
+function mouseout(d){
+  // Reset province color
+  d3.select(lastpinover).style('fill', 'black');  
+
+  // Remove effect text
+  
+}
+
+function changedate(){
+  location.href ="/"+ $("#date").val();
+  //console.log($("#date").val());  
+}
+
+</script>
+</body>
+</html>
