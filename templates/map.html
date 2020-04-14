@@ -14,19 +14,41 @@
 <script src="/static/d3.v3.min.js"></script>
 <script src="/static/topojson.v1.min.js"></script>
 
+<script src="/static/d3-color.v1.min.js"></script>
+<script src="/static/d3-interpolate.v1.min.js"></script>
+<script src="/static/d3-scale-chromatic.v1.min.js"></script>
 
+<div class="space">
+
+</div>
+<div class="graph"> </div>
 
 <div class="flex-parent">
     <div class="input-flex-container">
         {% for d in data.getDate() %}      
-        <div class="input">
-            <a href="/{{loop.index}}"><span  data-info="{{d}}"></span></a>
+        
+        {% if loop.index == iddate|int() %}
+        <div class="input active" style="background-color: blue;">
+            {% else %}
+          <div class="input">
+            {% endif %}
+           <a href="/{{loop.index}}"><span data-info="{{d}}"></span></a>                        
           </div>        
        {% endfor %}          
     </div>
 </div>    
 
+
+ 
+<div id="countryname">
+    world
+</div>
+
+
+
+
 <script>
+
 
 
 var places = [
@@ -42,13 +64,13 @@ var places = [
             {% endfor %}           
             ] 
 
-var width = 960,
+var width = 1260,
     height = 500;
 
 //Define map projection
-            var projection = d3.geo.mercator()
-				.center([0, 5 ])
-    				.scale(150);
+      var projection = d3.geo.mercator()
+				.center([0, 15 ])
+    				.scale(200);
 
             //Define path generator
             //var path = d3.geo.path()
@@ -57,9 +79,19 @@ var width = 960,
 var path = d3.geo.path().projection(projection);
 //var path = d3.geo.path();
 
-var svg = d3.select("body").append("svg")
+function zoomed() {
+  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+  
+
+var zoom = d3.behavior.zoom()
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+
+var svg = d3.select("div.graph").append("svg")
     .attr("width", width)
     .attr("height", height);
+
 
 
 var url = "/static/countries.json";
@@ -68,13 +100,19 @@ d3.json(url, function(error, topology) {
   
   var geojson = topojson.feature(topology, topology.objects.units);
 
-
   
+svg
+    .call(zoom)
+    .call(zoom.event);
+
+
+ 
 
 
   svg.selectAll("path")
       .data(geojson.features)
       .enter().append("path")
+      .on('mouseover', countrymouseover)
       .attr("d", path);
 
 svg.selectAll(".pin")
@@ -82,13 +120,11 @@ svg.selectAll(".pin")
 						  .enter().append("circle", ".pin")
 						  .attr("r", function(d) { 
                 if ( d.nbdeath == 0) return 0;  
-                if ( d.nbdeath < 1000 ) return 5;
-                else
-                {
-                  return 20;
-                }
+                return  Math.log(d.nbdeath);
+                
                 //return d.nbdeath/1000; 
               })
+              .attr("fill", function(d) { return d3.interpolateReds(d.nbdeath/50000); } )
 						  .attr("transform", function(d) {
 							return "translate(" + projection([
 							  d.location.longitude,
@@ -101,11 +137,19 @@ svg.selectAll(".pin")
 });
 
 var lastpinover = null;
+var lastdataover = null;
 
+function countrymouseover(d)
+{
+  console.log(d.properties.name);
+  $("#countryname").text(d.properties.name);
+}
 
 function mouseover(d){
   console.log(d);
+  $("#countryname ").text(d.name+": " +d.nbdeath);
   lastpinover = this;
+  lastdataover = d;
   // Highlight hovered province
      d3.select(this).style('fill', 'orange');
 
@@ -116,7 +160,8 @@ function mouseover(d){
 
 function mouseout(d){
   // Reset province color
-  d3.select(lastpinover).style('fill', 'black');  
+  console.log(lastpinover);
+  d3.select(lastpinover).style('fill', d3.interpolateReds(lastdataover.nbdeath/50000));  
 
   // Remove effect text
   
@@ -126,6 +171,7 @@ function changedate(){
   location.href ="/"+ $("#date").val();
   //console.log($("#date").val());  
 }
+
 
 </script>
 </body>

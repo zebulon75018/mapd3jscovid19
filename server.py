@@ -10,7 +10,7 @@ class DataCovid :
     def __init__(self):
         self.data = {}
         self.rowlabel = []
-        with open("time_series_covid19_confirmed_global.csv.txt") as csvfile:
+        with open("time_series_covid19_deaths_global.csv.txt") as csvfile:
             reader = csv.reader(csvfile) # change contents to floats
             n = 0
             for row in reader: # each row is a list
@@ -30,7 +30,7 @@ class DataCovid :
         return self.rowlabel[4:]
 
     def getName(self,n):
-        return self.data[n][1]
+        return "%s %s" % ( self.data[n][0] , self.data[n][1] )
 
     def getLat(self,n):
         return self.data[n][2]
@@ -44,6 +44,9 @@ class DataCovid :
 
 datacovid = DataCovid()
 
+@app.route('/favicon.ico')
+def favicon():
+    return ""
 
 @app.route('/')
 def home():

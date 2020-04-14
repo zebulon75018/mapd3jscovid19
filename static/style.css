@@ -22,8 +22,13 @@ h1 span {
   white-space: nowrap;
 }
 
+.space {
+  height: 100px;
+}
 .flex-parent {
-  display: flex;
+  position: absolute;
+  top: 10px;
+  left: 10px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -264,4 +269,19 @@ text {
 			.area:hover {
 				fill: brown;
 			}
-			
+      
+      circle {
+        fill-opacity: .5;
+        stroke: #fff;
+        stroke-width: .5px;
+      }      
+
+      #countryname {
+        font-size: 43px;
+        position: absolute;
+        bottom: 30px;
+        left: 30px;
+        width: 100%;
+      }
+
+      
