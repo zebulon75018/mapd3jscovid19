@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.border {
+  stroke-width: .3px;
+  fill: none;
+  stroke: #333;
+}
+
+.caption {
+  font-weight: bold;
+}
+
+.key path {
+  display: none;
+}
+
+.key line {
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+        <script src="/static/d3.v3.min.js"></script>
+        <script src="/static/topojson.v1.min.js"></script>
+        <script src="/static/queue.v1.min.js"></script>
+    
+
+<script>
+
+var width = 960,
+    height = 500,
+    formatNumber = d3.format("s");
+
+var color = d3.scale.linear()
+    .domain([0, 2000])
+    .range(["#deebf7","#08306b"]);    
+    
+
+var projection = d3.geo.albers()
+    .center([0, 49.5])
+    .rotate([-2.8, 3])
+    .parallels([45, 55])
+    .scale(2500)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var svg = d3.select('body').append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var g = svg.append("g")
+    .attr("class", "key")
+    .attr("transform", "translate(" + 40 + "," + 40 + ")");
+
+/*
+g.selectAll("rect")
+    .data(color.range().map(function(currentColor) {
+      var d = color.invertExtent(currentColor);
+      if (d[0] == null) d[0] = x.domain()[0];
+      if (d[1] == null) d[1] = x.domain()[1];
+      return d;          
+    }))
+  .enter().append("rect")
+    .attr("height", 8)
+    .attr("x", function(d) { return x(d[0]); })
+    .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+    .style("fill", function(d) { return color(d[0]); });
+*/
+
+
+var population = [
+    {% for d in covidFR %}
+    {name: "{{d.name}}", population: "{{d.population}}"},
+    {% endfor %}
+    ];
+
+queue()
+    .defer(d3.json, "/static/france.json")
+    //.defer(d3.csv, "/static/population.csv")
+    .await(ready);
+
+function ready(error, france) {  
+  var regions = svg.selectAll(".departements")
+      .data(topojson.feature(france, france.objects.regions).features)
+    .enter().append("path")
+      .attr("class", "departements")
+      .attr("d", path)
+      .style("fill",function(departement){
+        var paringData = population.filter(function(population){
+            if ( departement.properties.name === population.name )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }             
+             })[0];
+        return paringData ? color(paringData.population) : color(0);
+      });
+
+  svg.append("path")
+      .datum(topojson.mesh(france, france.objects.regions, function(a, b) { return a.properties.name !== b.properties.name || a === b; }))
+      .attr("class","border")
+      .attr("d", path);
+ };
+
+</script>
