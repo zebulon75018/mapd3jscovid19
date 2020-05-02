@@ -24,7 +24,7 @@ Add few display from :
 https://pomber.github.io/covid19/timeseries.json
 
 
-[Treemap of death categorize by country](treemap.png)
+![Treemap of death categorize by country](treemap.png)
 
 [Display case/ death .. by country] (bycountry.png)
 
