@@ -20,4 +20,18 @@ Data from
 [![video](screenshot.png)](https://youtu.be/xL2MTCgiKwM)
 
 
+Add few display from : 
+https://pomber.github.io/covid19/timeseries.json
+
+Treemap of death categorize by country
+[(treemap.png)] 
+
+
+Display case/ death .. by country 
+
+[(bycountry.png)] 
+
+Display evolution of death by day 
+[(deathbyday.png)] 
+
 
